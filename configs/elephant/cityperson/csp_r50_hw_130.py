@@ -58,7 +58,7 @@ test_cfg = dict(
     max_per_img=100)
 # dataset settings
 dataset_type = 'CocoCSPORIDataset'
-data_root = 'datasets/CityPersons/'
+data_root = 'datasets/ECV_130/'
 INF = 1e8
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -96,8 +96,8 @@ data = dict(
         with_label=True),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + '/leftImg8bit_trainvaltest/val_gt_for_mmdetction.json',
-        img_prefix=data_root + '/leftImg8bit_trainvaltest/leftImg8bit/val_all_in_folder/',
+        ann_file=data_root + 'test.json',
+        img_prefix=data_root,
         img_scale=(2048, 1024),
         img_norm_cfg=img_norm_cfg,
         size_divisor=128,

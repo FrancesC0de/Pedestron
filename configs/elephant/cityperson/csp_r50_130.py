@@ -36,9 +36,7 @@ model = dict(
             loss_weight=0.01),
         loss_bbox=dict(type='IoULoss', loss_weight=1),
         loss_offset=dict(
-            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=0.1),
-        predict_width=True,
-            ))
+            type='CrossEntropyLoss', use_sigmoid=True, loss_weight=0.1)))
 # training and testing settings
 train_cfg = dict(
     assigner=dict(
@@ -58,7 +56,7 @@ test_cfg = dict(
     max_per_img=100)
 # dataset settings
 dataset_type = 'CocoCSPORIDataset'
-data_root = 'datasets/CityPersons/'
+data_root = 'datasets/ECV_130/'
 INF = 1e8
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -80,8 +78,7 @@ data = dict(
         remove_small_box=True,
         small_box_size=8,
         strides=[4],
-        regress_ranges=((-1, INF),),
-        with_width=True,),
+        regress_ranges=((-1, INF),)),
     val=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/val.json',
@@ -96,8 +93,8 @@ data = dict(
         with_label=True),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + '/leftImg8bit_trainvaltest/val_gt_for_mmdetction.json',
-        img_prefix=data_root + '/leftImg8bit_trainvaltest/leftImg8bit/val_all_in_folder/',
+        ann_file=data_root + 'test.json',
+        img_prefix=data_root,
         img_scale=(2048, 1024),
         img_norm_cfg=img_norm_cfg,
         size_divisor=128,
