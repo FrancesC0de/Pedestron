@@ -10,7 +10,7 @@ from mmdet.apis import (train_detector, init_dist, get_root_logger,
                         set_random_seed)
 from mmdet.models import build_detector
 import torch
-
+import warnings
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
@@ -85,13 +85,16 @@ def main():
             CLASSES=train_dataset.CLASSES)
     # add an attribute for visualization convenience
     model.CLASSES = train_dataset.CLASSES
-    train_detector(
-        model,
-        train_dataset,
-        cfg,
-        distributed=distributed,
-        validate=args.validate,
-        logger=logger)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', UserWarning)
+
+        train_detector(
+            model,
+            train_dataset,
+            cfg,
+            distributed=distributed,
+            validate=args.validate,
+            logger=logger)
 
 
 if __name__ == '__main__':

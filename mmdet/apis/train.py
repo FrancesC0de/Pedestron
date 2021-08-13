@@ -199,7 +199,7 @@ def _non_dist_train(model, dataset, cfg, validate=False):
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
     runner = Runner(model, batch_processor, optimizer, cfg.work_dir,
-                    cfg.log_level, mean_teacher=cfg.mean_teacher)
+                    cfg.log_level, mean_teacher=cfg.get('mean_teacher'))
     # fp16 setting
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
@@ -214,6 +214,6 @@ def _non_dist_train(model, dataset, cfg, validate=False):
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
-    if cfg.mean_teacher:
+    if cfg.get('mean_teacher'):
         runner.load_mean_teacher_checkpoint(cfg)
     runner.run(data_loaders, cfg.workflow, cfg.total_epochs)
