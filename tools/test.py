@@ -11,9 +11,12 @@ from mmcv.runner import load_checkpoint, get_dist_info
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
 from mmdet.apis import init_dist
-from mmdet.core import results2json, coco_eval, wrap_fp16_model
+from mmdet.core import results2json, coco_eval, coco_eval_class_wise, wrap_fp16_model
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
+
+from mmdet import datasets
+from mmdet.core import eval_map
 
 
 def single_gpu_test(model, data_loader, show=False, save_img=False, save_img_dir=''):
@@ -121,6 +124,8 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument(
+        '--class_wise', action='store_true', help='whether eval class wise ap')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -176,7 +181,7 @@ def main():
     else:
         model = MMDistributedDataParallel(model.cuda())
         outputs = multi_gpu_test(model, data_loader, args.tmpdir)
-
+    
     rank, _ = get_dist_info()
     if args.out and rank == 0:
         print('\nwriting results to {}'.format(args.out))
@@ -184,13 +189,23 @@ def main():
         eval_types = args.eval
         if eval_types:
             print('Starting evaluate {}'.format(' and '.join(eval_types)))
-            if eval_types == ['proposal_fast']:
+            if eval_types == ['voc']:
+                result_files = results2json(dataset, outputs, args.out)
+                test_dataset = mmcv.runner.obj_from_dict(cfg.data.test, datasets)
+                voc_eval(args.result, test_dataset, args.iou_thr)
+            elif eval_types == ['proposal_fast']:
                 result_file = args.out
                 coco_eval(result_file, eval_types, dataset.coco)
             else:
                 if not isinstance(outputs[0], dict):
                     result_files = results2json(dataset, outputs, args.out)
-                    coco_eval(result_files, eval_types, dataset.coco)
+                    print('result files: ',result_files)
+                    if args.class_wise:
+                            print("Evaluating class-wise...")
+                            coco_eval_class_wise(result_files, eval_types, dataset.coco)
+                    else:
+                            print("Evaluating overall performance...")
+                            coco_eval(result_files, eval_types, dataset.coco)
                 else:
                     for name in outputs[0]:
                         print('\nEvaluating {}'.format(name))
@@ -199,6 +214,37 @@ def main():
                         result_files = results2json(dataset, outputs_,
                                                     result_file)
                         coco_eval(result_files, eval_types, dataset.coco)
+                        if args.class_wise:
+                            print("Evaluating class-wise...")
+                            coco_eval_class_wise(result_files, eval_types, dataset.coco)
+                        else:
+                            print("Evaluating overall performance...")
+                            coco_eval(result_files, eval_types, dataset.coco)
+    
+
+
+    '''
+    rank, _ = get_dist_info()
+    if rank == 0:
+        if args.out:
+            print(f'\nwriting results to {args.out}')
+            mmcv.dump(outputs, args.out)
+        kwargs = {} #if args.eval_options is None else args.eval_options
+        if args.eval:
+            eval_kwargs = cfg.get('evaluation', {}).copy()
+            # hard-code way to remove EvalHook args
+            for key in [
+                    'interval', 'tmpdir', 'start', 'gpu_collect', 'save_best',
+                    'rule'
+            ]:
+                eval_kwargs.pop(key, None)
+            eval_kwargs.update(dict(metric=args.eval, **kwargs))
+            metric = dataset.evaluate(outputs, **eval_kwargs)
+            print(metric)
+            metric_dict = dict(config=args.config, metric=metric)
+            if args.work_dir is not None and rank == 0:
+                mmcv.dump(metric_dict, json_file)    
+    '''
 
 
 if __name__ == '__main__':
