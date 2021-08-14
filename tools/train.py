@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument('--local_rank', type=int, default=0)
     parser.add_argument('--convert', action='store_false', help='whether convert to json')
     parser.add_argument('--datapath', type=str, default='/home/data/130/')
-    parser.add_argument('--jsonname', type=str, default='train.json')
+    parser.add_argument('--jsonpath', type=str, default='/home/data/130/train.json')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -51,7 +51,7 @@ def main():
     args = parse_args()
     # convert to json
     if args.convert == True:
-        convert(json_name=args.jsonname, xml_dir=args.datapath)
+        convert(json_file=args.jsonpath, xml_dir=args.datapath)
 
     cfg = Config.fromfile(args.config)
     # set cudnn_benchmark

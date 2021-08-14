@@ -74,11 +74,10 @@ def get_categories(xml_files):
     return {name: i for i, name in enumerate(classes_names)}
 
 
-def convert(xml_files=None, json_file=None, json_name='train.json', xml_dir='/home/data/130/'):
+def convert(xml_files=None, json_file=None, xml_dir='/home/data/130/'):
     # function call
     if xml_files is None:
         xml_files = glob.glob(os.path.join(xml_dir, "*.xml"))
-        json_file = os.path.join(xml_dir, json_name)
     json_dict = {"images": [], "type": "instances", "annotations": [], "categories": []}
     if PRE_DEFINE_CATEGORIES is not None:
         categories = PRE_DEFINE_CATEGORIES
