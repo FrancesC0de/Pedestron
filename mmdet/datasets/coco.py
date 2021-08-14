@@ -130,3 +130,16 @@ class CocoDataset(CustomDataset):
             ann['mask_polys'] = gt_mask_polys
             ann['poly_lens'] = gt_poly_lens
         return ann
+
+    def get_cat_ids(self, idx):
+        """Get COCO category ids by index.
+        Args:
+        idx (int): Index of data.
+        Returns:
+        list[int]: All categories in the image of specified index.
+        """
+
+        img_id = self.img_infos[idx]['id']
+        ann_ids = self.coco.getAnnIds(imgIds=[img_id])
+        ann_info = self.coco.loadAnns(ann_ids)
+        return [ann['category_id'] for ann in ann_info]

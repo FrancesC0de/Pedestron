@@ -1,7 +1,7 @@
 import copy
 
 from mmdet.utils import build_from_cfg
-from .dataset_wrappers import ConcatDataset, RepeatDataset
+from .dataset_wrappers import ConcatDataset, RepeatDataset, ClassBalancedDataset
 from .registry import DATASETS
 
 
@@ -30,6 +30,9 @@ def _concat_dataset(cfg):
 def build_dataset(cfg):
     if cfg['type'] == 'RepeatDataset':
         dataset = RepeatDataset(build_dataset(cfg['dataset']), cfg['times'])
+    elif cfg['type'] == 'ClassBalancedDataset':
+        dataset = ClassBalancedDataset(
+            build_dataset(cfg['dataset']), cfg['oversample_thr'])
     elif isinstance(cfg['ann_file'], (list, tuple)):
         dataset = _concat_dataset(cfg)
     else:

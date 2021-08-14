@@ -49,10 +49,7 @@ model = dict(
         target_stds=[1.0, 1.0, 1.0, 1.0],
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='BalancedL1Loss', alpha=0.5,
-                gamma=1.5,
-                beta=1.0 / 9.0,
-                loss_weight=1.0)),
+        loss_bbox=dict(type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0)),
     bbox_roi_extractor=dict(
         type='SingleRoIExtractor',
         roi_layer=dict(
@@ -77,8 +74,7 @@ model = dict(
                 use_sigmoid=False,
                 loss_weight=1.0),
             loss_bbox=dict(
-                type='BalancedL1Loss', alpha=0.5,
-                gamma=1.5,
+                type='SmoothL1Loss',
                 beta=1.0,
                 loss_weight=1.0)),
         dict(
@@ -96,8 +92,7 @@ model = dict(
                 use_sigmoid=False,
                 loss_weight=1.0),
             loss_bbox=dict(
-                type='BalancedL1Loss', alpha=0.5,
-                gamma=1.5,
+                type='SmoothL1Loss',
                 beta=1.0,
                 loss_weight=1.0)),
         dict(
@@ -115,8 +110,7 @@ model = dict(
                 use_sigmoid=False,
                 loss_weight=1.0),
             loss_bbox=dict(
-                type='BalancedL1Loss', alpha=0.5,
-                gamma=1.5,
+                type='SmoothL1Loss',
                 beta=1.0,
                 loss_weight=1.0)),
     ])
@@ -217,16 +211,21 @@ data = dict(
     imgs_per_gpu=1,
     workers_per_gpu=2,
     train=dict(
-        type=dataset_type,
-        ann_file=data_root + 'train.json',
-        img_prefix=data_root + 'train/',
-        img_scale=(1333, 800),
-        img_norm_cfg=img_norm_cfg,
-        size_divisor=32,
-        flip_ratio=0.5,
-        with_mask=False,
-        with_crowd=True,
-        with_label=True),
+	type='ClassBalancedDataset',
+        oversample_thr=1e-3,
+        dataset=dict(  # This is the original config of Dataset
+            type=dataset_type,
+            ann_file=data_root + 'train.json',
+            img_prefix=data_root + 'train/',
+            img_scale=(1333, 800),
+            img_norm_cfg=img_norm_cfg,
+            size_divisor=32,
+            flip_ratio=0.5,
+            with_mask=False,
+            with_crowd=True,
+            with_label=True
+        )
+    ),
     val=dict(
         type=dataset_type,
         ann_file=data_root + 'val.json',
@@ -250,7 +249,7 @@ data = dict(
         with_label=False,
         test_mode=True))
 # optimizer
-optimizer = dict(type='SGD', lr=1e-5, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=1e-3, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
