@@ -12,6 +12,8 @@ from mmdet.models import build_detector
 import torch
 import warnings
 
+from voc2coco import convert
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
     parser.add_argument('config', help='train config file path')
@@ -35,6 +37,9 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument('--convert', action='store_false', help='whether convert to json')
+    parser.add_argument('--datapath', type=str, default='/home/data/130/')
+    parser.add_argument('--jsonname', type=str, default='train.json')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -44,6 +49,9 @@ def parse_args():
 
 def main():
     args = parse_args()
+    # convert to json
+    if args.convert == True:
+        convert(json_name=args.jsonname, xml_dir=args.datapath)
 
     cfg = Config.fromfile(args.config)
     # set cudnn_benchmark

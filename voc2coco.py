@@ -17,7 +17,7 @@ START_BOUNDING_BOX_ID = 1
 #  "motorbike": 14, "person": 15, "pottedplant": 16,
 #  "sheep": 17, "sofa": 18, "train": 19, "tvmonitor": 20}
 
-PRE_DEFINE_CATEGORIES = {"person": 2}
+PRE_DEFINE_CATEGORIES = {"person_clothes": 1, "person_no_clothes": 2}
 #  "bottle":5, "bus": 6, "car": 7, "cat": 8, "chair": 9,
 #  "cow": 10, "diningtable": 11, "dog": 12, "horse": 13,
 #  "motorbike": 14, "person": 15, "pottedplant": 16,
@@ -74,7 +74,11 @@ def get_categories(xml_files):
     return {name: i for i, name in enumerate(classes_names)}
 
 
-def convert(xml_files, json_file):
+def convert(xml_files=None, json_file=None, json_name='train.json', xml_dir='/home/data/130/'):
+    # function call
+    if xml_files is None:
+        xml_files = glob.glob(os.path.join(xml_dir, "*.xml"))
+        json_file = os.path.join(xml_dir, json_name)
     json_dict = {"images": [], "type": "instances", "annotations": [], "categories": []}
     if PRE_DEFINE_CATEGORIES is not None:
         categories = PRE_DEFINE_CATEGORIES
