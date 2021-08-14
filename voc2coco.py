@@ -48,7 +48,7 @@ def get_filename_as_int(filename):
         #import pdb;pdb.set_trace()
         filename = filename.replace("\\", "/")
         filename = os.path.splitext(os.path.basename(filename))[0]
-        filename = filename.split('_')[1]
+        filename = filename.split('_')[-1]
         return int(filename)
     except:
         raise ValueError("Filename %s is supposed to be an integer." % (filename))
