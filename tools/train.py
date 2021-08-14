@@ -13,6 +13,7 @@ import torch
 import warnings
 
 from voc2coco import convert
+from cocosplit import cocosplit
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
@@ -37,9 +38,12 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
-    parser.add_argument('--convert', action='store_false', help='whether convert to json')
+    parser.add_argument('--convert', action='store_false', help='whether convert to json and split')
     parser.add_argument('--datapath', type=str, default='/home/data/130/')
     parser.add_argument('--jsonpath', type=str, default='/home/data/130/train.json')
+    parser.add_argument('--s', type=float, default=0.9)
+    parser.add_argument('--trainsplit', type=str, default='/home/data/130/train_split.json')
+    parser.add_argument('--testsplit', type=str, default='/home/data/130/train_split.json')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -52,6 +56,8 @@ def main():
     # convert to json
     if args.convert == True:
         convert(json_file=args.jsonpath, xml_dir=args.datapath)
+        # split into train and test
+        cocosplit(args.jsonpath, args.s, args.trainsplit , args.testsplit)
 
     cfg = Config.fromfile(args.config)
     # set cudnn_benchmark
