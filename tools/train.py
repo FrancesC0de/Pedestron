@@ -43,7 +43,7 @@ def parse_args():
     parser.add_argument('--jsonpath', type=str, default='/home/data/130/train.json')
     parser.add_argument('--s', type=float, default=0.9)
     parser.add_argument('--trainsplit', type=str, default='/home/data/130/train_split.json')
-    parser.add_argument('--testsplit', type=str, default='/home/data/130/train_split.json')
+    parser.add_argument('--testsplit', type=str, default='/home/data/130/test_split.json')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
