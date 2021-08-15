@@ -40,10 +40,10 @@ def parse_args():
     parser.add_argument('--local_rank', type=int, default=0)
     parser.add_argument('--convert', action='store_false', help='whether convert to json and split')
     parser.add_argument('--datapath', type=str, default='/home/data/130/')
-    parser.add_argument('--jsonpath', type=str, default='/home/data/130/train.json')
+    parser.add_argument('--jsonpath', type=str, default='/home/data/train/train.json')
     parser.add_argument('--s', type=float, default=0.9)
-    parser.add_argument('--trainsplit', type=str, default='/home/data/130/train_split.json')
-    parser.add_argument('--testsplit', type=str, default='/home/data/130/test_split.json')
+    parser.add_argument('--trainsplit', type=str, default='/home/data/train/train_split.json')
+    parser.add_argument('--testsplit', type=str, default='/home/data/train/test_split.json')
     parser.add_argument('--ckp_path', type=str, default='/project/train/models')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
