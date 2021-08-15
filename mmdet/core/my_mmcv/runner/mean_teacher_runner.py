@@ -40,8 +40,10 @@ class Mean_teacher_Runner(Runner):
                  work_dir=None,
                  log_level=logging.INFO,
                  logger=None,
-                 mean_teacher=False):
+                 mean_teacher=False,
+                 ckp_path=None):
         assert callable(batch_processor)
+        self.ckp_path = ckp_path
         self.model = model
         if optimizer is not None:
             self.optimizer = self.init_optimizer(optimizer)
@@ -112,15 +114,20 @@ class Mean_teacher_Runner(Runner):
             meta.update(epoch=self.epoch + 1, iter=self.iter)
 
         filename = filename_tmpl.format(self.epoch + 1)
-        filepath = osp.join(out_dir, filename)
-        linkpath = osp.join(out_dir, 'latest.pth')
+        if self.ckp_path is not None:
+            filepath = osp.join(self.ckp_path, filename[:-4], filename)
+            linkpath = osp.join(self.ckp_path, 'final', 'latest.pth')
+        else:
+            filepath = osp.join(out_dir, filename)
+            linkpath = osp.join(out_dir, 'latest.pth')
         optimizer = self.optimizer if save_optimizer else None
         save_checkpoint(self.model, filepath, optimizer=optimizer, meta=meta)
         if self.mean_teacher:
             mean_teacher_path = filepath + ".stu"
             self.save_mean_teacher_checkpoint(self.teacher_dict, mean_teacher_path)
         # use relative symlink
-        mmcv.symlink(filename, linkpath)
+        if self.ckp_path is None:
+            mmcv.symlink(filename, linkpath)
 
     def save_mean_teacher_checkpoint(self, state_dict,filename):
         checkpoint = {

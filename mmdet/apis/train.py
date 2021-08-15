@@ -52,7 +52,8 @@ def train_detector(model,
                    cfg,
                    distributed=False,
                    validate=False,
-                   logger=None):
+                   logger=None,
+                   ckp_path=None):
     if logger is None:
         logger = get_root_logger(cfg.log_level)
 
@@ -60,7 +61,7 @@ def train_detector(model,
     if distributed:
         _dist_train(model, dataset, cfg, validate=validate)
     else:
-        _non_dist_train(model, dataset, cfg, validate=validate)
+        _non_dist_train(model, dataset, cfg, validate=validate, ckp_path=ckp_path)
 
 
 def build_optimizer(model, optimizer_cfg):
@@ -183,15 +184,15 @@ def _dist_train(model, dataset, cfg, validate=False):
     runner.run(data_loaders, cfg.workflow, cfg.total_epochs)
 
 
-def _non_dist_train(model, dataset, cfg, validate=False):
+def _non_dist_train(model, dataset, cfg, validate=False, ckp_path=None):
     # prepare data loaders
     data_loaders = [
         build_dataloader(
-            dataset,
+            ds,
             cfg.data.imgs_per_gpu,
             cfg.data.workers_per_gpu,
-            cfg.gpus,
             dist=False)
+        for ds in dataset
     ]
     # put model on gpus
     model = MMDataParallel(model, device_ids=range(cfg.gpus)).cuda()
@@ -199,7 +200,7 @@ def _non_dist_train(model, dataset, cfg, validate=False):
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
     runner = Runner(model, batch_processor, optimizer, cfg.work_dir,
-                    cfg.log_level, mean_teacher=cfg.get('mean_teacher'))
+                    cfg.log_level, mean_teacher=cfg.get('mean_teacher'), ckp_path=ckp_path)
     # fp16 setting
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:

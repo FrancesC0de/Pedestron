@@ -32,7 +32,7 @@ model = dict(
                 num_channels=(32, 64, 128, 256))
         ),
         #frozen_stages=-1,
-        #norm_eval=False,
+        norm_eval=False,
     ),
     neck=dict(
         type='HRFPN',
@@ -196,9 +196,10 @@ test_cfg = dict(
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
-        score_thr=0.05,
-        nms=dict(type='nms', iou_thr=0.5),
-        max_per_img=100),
+        score_thr=0.001,
+        nms=dict(type='soft_nms', iou_thr=0.5),
+        max_per_img=100,
+        mask_thr_binary=0.5),
     keep_all_stages=False)
 # dataset settings
 dataset_type = 'CocoDataset'
@@ -208,7 +209,7 @@ img_norm_cfg = dict(
     std=[58.395, 57.12, 57.375],
     to_rgb=True)
 data = dict(
-    imgs_per_gpu=1,
+    imgs_per_gpu=1, # 16
     workers_per_gpu=2,
     train=dict(
 	type='ClassBalancedDataset',
@@ -249,7 +250,7 @@ data = dict(
         with_label=False,
         test_mode=True))
 # optimizer
-optimizer = dict(type='SGD', lr=1e-3, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=1e-3, momentum=0.9, weight_decay=0.0001) # 1e-4
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -268,10 +269,10 @@ log_config = dict(
     ])
 # yapf:enable
 # runtime settings
-total_epochs = 20 #2
+total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/cascade_rcnn_hrnetv2p_w32'
+work_dir = 'project/train/log'
 load_from = None
 resume_from = None
-workflow = [('train', 1)]
+workflow = [('train', 1),('val', 1)]

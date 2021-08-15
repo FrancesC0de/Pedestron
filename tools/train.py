@@ -44,6 +44,7 @@ def parse_args():
     parser.add_argument('--s', type=float, default=0.9)
     parser.add_argument('--trainsplit', type=str, default='/home/data/130/train_split.json')
     parser.add_argument('--testsplit', type=str, default='/home/data/130/test_split.json')
+    parser.add_argument('--ckp_path', type=str, default='/project/train/models')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -90,6 +91,9 @@ def main():
         cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
 
     train_dataset = build_dataset(cfg.data.train)
+    datasets = [build_dataset(cfg.data.train)]
+    if len(cfg.workflow) == 2:  # This is not ideal, but works if the workflow is not crazy
+        datasets.append(build_dataset(cfg.data.val))
     if cfg.checkpoint_config is not None:
         # save mmdet version, config file content and class names in
         # checkpoints as meta data
@@ -104,11 +108,12 @@ def main():
 
         train_detector(
             model,
-            train_dataset,
+            datasets,
             cfg,
             distributed=distributed,
             validate=args.validate,
-            logger=logger)
+            logger=logger,
+            ckp_path=args.ckp_path)
 
 
 if __name__ == '__main__':
