@@ -225,9 +225,6 @@ data = dict(
             with_mask=False,
             with_crowd=True,
             with_label=True,
-            extra_aug=dict(
-                random_crop=dict(min_ious=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), min_crop_size=0.1),
-         ),
         )
     ),
     val=dict(
